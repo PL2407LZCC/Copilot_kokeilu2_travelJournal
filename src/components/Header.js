@@ -32,7 +32,7 @@ const Header = ({ onShowAuth }) => {
                 </button>
               )}
             </div>
-          </div>
+          </nav>
         </div>
       </div>
     </header>

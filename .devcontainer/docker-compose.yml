@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  travel-journal-dev:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    ports:
+      - "3000:3000"  # React development server
+      - "5000:5000"  # Express backend server
+    volumes:
+      - ..:/workspace:cached
+      - node_modules:/workspace/node_modules
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    command: npm run dev
+    stdin_open: true
+    tty: true
+
+volumes:
+  node_modules:
