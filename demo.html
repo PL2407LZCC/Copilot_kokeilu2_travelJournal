@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Journal - API Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .demo-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .status {
+            color: #28a745;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌍 Travel Journal - API Demo</h1>
+    
+    <div class="demo-section">
+        <h2>Backend Status</h2>
+        <button onclick="checkHealth()">Check Health</button>
+        <div id="health-result" class="result" style="display:none;"></div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Authentication</h2>
+        <h3>Login (demo/demo)</h3>
+        <input type="text" id="username" placeholder="Username" value="demo">
+        <input type="password" id="password" placeholder="Password" value="demo">
+        <button onclick="login()">Login</button>
+        <div id="auth-result" class="result" style="display:none;"></div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Journal Entries</h2>
+        <button onclick="getEntries()">Get All Entries</button>
+        <div id="entries-result" class="result" style="display:none;"></div>
+        
+        <h3>Add New Entry</h3>
+        <input type="text" id="country-code" placeholder="Country Code (e.g., FIN)" value="FIN">
+        <input type="text" id="country-name" placeholder="Country Name" value="Finland">
+        <textarea id="entry-text" placeholder="Your journal entry..." rows="3">Beautiful country with amazing nature and friendly people!</textarea>
+        <select id="visit-status">
+            <option value="visited">Visited</option>
+            <option value="want-to-visit">Want to Visit</option>
+            <option value="not-visited">Not Visited</option>
+        </select>
+        <button onclick="addEntry()">Add Entry</button>
+        <div id="add-result" class="result" style="display:none;"></div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Countries Data</h2>
+        <button onclick="getCountries()">Get Countries (First 5)</button>
+        <div id="countries-result" class="result" style="display:none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.style.color = isError ? 'red' : 'black';
+            element.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                showResult('health-result', data);
+            } catch (error) {
+                showResult('health-result', { error: error.message }, true);
+            }
+        }
+
+        async function login() {
+            try {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                showResult('auth-result', data, !response.ok);
+            } catch (error) {
+                showResult('auth-result', { error: error.message }, true);
+            }
+        }
+
+        async function getEntries() {
+            try {
+                const response = await fetch(`${API_BASE}/journal`);
+                const data = await response.json();
+                showResult('entries-result', data);
+            } catch (error) {
+                showResult('entries-result', { error: error.message }, true);
+            }
+        }
+
+        async function addEntry() {
+            try {
+                const entryData = {
+                    countryCode: document.getElementById('country-code').value,
+                    countryName: document.getElementById('country-name').value,
+                    entry: document.getElementById('entry-text').value,
+                    visitStatus: document.getElementById('visit-status').value
+                };
+                
+                const response = await fetch(`${API_BASE}/journal`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(entryData)
+                });
+                
+                const data = await response.json();
+                showResult('add-result', data, !response.ok);
+                
+                if (response.ok) {
+                    getEntries(); // Refresh entries list
+                }
+            } catch (error) {
+                showResult('add-result', { error: error.message }, true);
+            }
+        }
+
+        async function getCountries() {
+            try {
+                const response = await fetch(`${API_BASE}/countries`);
+                const data = await response.json();
+                // Show only first 5 countries to avoid overwhelming the demo
+                showResult('countries-result', data.slice(0, 5));
+            } catch (error) {
+                showResult('countries-result', { error: error.message }, true);
+            }
+        }
+
+        // Check health on page load
+        window.addEventListener('load', checkHealth);
+    </script>
+</body>
+</html>
