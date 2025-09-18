@@ -1,0 +1,56 @@
+{
+  "name": "Travel Journal Development",
+  "dockerFile": "Dockerfile",
+  "context": "..",
+  
+  // Configure tool-specific properties.
+  "customizations": {
+    // Configure properties specific to VS Code.
+    "vscode": {
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-json",
+        "formulahendry.auto-rename-tag",
+        "ms-vscode.vscode-eslint",
+        "ms-vscode.vscode-node-azure"
+      ],
+      
+      // Set *default* container specific settings.json values on container create.
+      "settings": {
+        "typescript.updateImportsOnFileMove.enabled": "always",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
+      }
+    }
+  },
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [3000, 5000],
+  "portsAttributes": {
+    "3000": {
+      "label": "React Development Server",
+      "onAutoForward": "notify"
+    },
+    "5000": {
+      "label": "Express Backend Server",
+      "onAutoForward": "notify"
+    }
+  },
+
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": "npm install --legacy-peer-deps",
+
+  // Use 'postStartCommand' to run commands after the container is started.
+  "postStartCommand": "echo '🌍 Travel Journal dev container is ready! Run: npm run dev'",
+
+  // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+  "remoteUser": "node",
+
+  // Set the working directory
+  "workspaceFolder": "/workspace"
+}
