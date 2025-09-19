@@ -1,0 +1,273 @@
+.journal-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #f8f9fa;
+  min-height: calc(100vh - 80px);
+}
+
+.journal-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 30px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  color: white;
+}
+
+.journal-header h2 {
+  margin: 0 0 10px 0;
+  font-size: 2.5rem;
+  font-weight: 600;
+}
+
+.journal-header p {
+  margin: 0 0 20px 0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.error-message {
+  color: #ff6b6b !important;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px 20px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.journal-stats {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.journal-filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 10px 20px;
+  border: 2px solid #e9ecef;
+  background: white;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  color: #495057;
+}
+
+.filter-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.filter-btn.active {
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.journal-content {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.no-entries {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6c757d;
+}
+
+.no-entries h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.5rem;
+}
+
+.no-entries p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.entries-by-country {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.country-section {
+  border: 2px solid #f1f3f4;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.country-section:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.1);
+}
+
+.country-header {
+  background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+  padding: 20px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.country-header h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #495057;
+}
+
+.country-status {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.country-status.visited {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
+}
+
+.country-status.want-to-visit {
+  background: rgba(155, 89, 182, 0.1);
+  color: #9b59b6;
+}
+
+.country-status.not-visited {
+  background: rgba(120, 120, 120, 0.1);
+  color: #6c757d;
+}
+
+.country-entries {
+  padding: 0;
+}
+
+.journal-entry {
+  padding: 20px 25px;
+  border-bottom: 1px solid #f1f3f4;
+  transition: background 0.2s ease;
+}
+
+.journal-entry:last-child {
+  border-bottom: none;
+}
+
+.journal-entry:hover {
+  background: #f8f9fa;
+}
+
+.entry-meta {
+  margin-bottom: 12px;
+}
+
+.entry-date {
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.entry-content {
+  color: #495057;
+  line-height: 1.6;
+}
+
+.entry-content p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.journal-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .journal-container {
+    padding: 15px;
+  }
+  
+  .journal-header {
+    padding: 20px 15px;
+  }
+  
+  .journal-header h2 {
+    font-size: 2rem;
+  }
+  
+  .journal-stats {
+    gap: 20px;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
+  }
+  
+  .country-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  .journal-content {
+    padding: 20px 15px;
+  }
+  
+  .journal-entry {
+    padding: 15px;
+  }
+  
+  .filter-btn {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+}

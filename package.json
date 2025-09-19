@@ -30,6 +30,7 @@
     "react-dom": "^18.2.0",
     "react-globe.gl": "^2.36.0",
     "react-leaflet": "^4.2.1",
+    "sqlite3": "^5.1.7",
     "three": "^0.180.0"
   },
   "devDependencies": {

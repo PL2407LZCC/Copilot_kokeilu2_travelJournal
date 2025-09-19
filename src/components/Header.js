@@ -34,7 +34,7 @@ const Header = ({ onShowAuth, onViewChange, currentView }) => {
               </a>
               <a 
                 href="#profile" 
-                className={`nav-link ${currentView === 'profile' ? 'active' : ''}`}
+                className="nav-link"
                 onClick={(e) => handleNavClick('profile', e)}
               >
                 Profile
