@@ -1,4 +1,5 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect } from "react";
+import parseJSONSafe from "../utils/safeJson";
 
 export const AuthContext = createContext();
 
@@ -8,13 +9,13 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check if user is logged in (from localStorage)
-    const savedUser = localStorage.getItem('travel-journal-user');
+    const savedUser = localStorage.getItem("travel-journal-user");
     if (savedUser) {
       try {
         setUser(JSON.parse(savedUser));
       } catch (error) {
-        console.error('Error parsing saved user:', error);
-        localStorage.removeItem('travel-journal-user');
+        console.error("Error parsing saved user:", error);
+        localStorage.removeItem("travel-journal-user");
       }
     }
     setLoading(false);
@@ -22,24 +23,24 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await response.json();
-      
+      const data = await parseJSONSafe(response);
+
       if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
+        throw new Error((data && data.error) || "Login failed");
       }
-      
+
       setUser(data.user);
-      localStorage.setItem('travel-journal-user', JSON.stringify(data.user));
-      localStorage.setItem('travel-journal-token', data.token);
-      
+      localStorage.setItem("travel-journal-user", JSON.stringify(data.user));
+      localStorage.setItem("travel-journal-token", data.token);
+
       return data.user;
     } catch (error) {
       throw error;
@@ -48,24 +49,24 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, email, password) => {
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ username, email, password }),
       });
 
-      const data = await response.json();
-      
+      const data = await parseJSONSafe(response);
+
       if (!response.ok) {
-        throw new Error(data.error || 'Registration failed');
+        throw new Error((data && data.error) || "Registration failed");
       }
-      
+
       setUser(data.user);
-      localStorage.setItem('travel-journal-user', JSON.stringify(data.user));
-      localStorage.setItem('travel-journal-token', data.token);
-      
+      localStorage.setItem("travel-journal-user", JSON.stringify(data.user));
+      localStorage.setItem("travel-journal-token", data.token);
+
       return data.user;
     } catch (error) {
       throw error;
@@ -74,8 +75,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('travel-journal-user');
-    localStorage.removeItem('travel-journal-token');
+    localStorage.removeItem("travel-journal-user");
+    localStorage.removeItem("travel-journal-token");
   };
 
   const value = {
@@ -83,12 +84,8 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    loading
+    loading,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

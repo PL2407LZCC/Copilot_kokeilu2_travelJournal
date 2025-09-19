@@ -1,6 +1,7 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { AuthContext } from '../contexts/AuthContext';
-import './Profile.css';
+import React, { useContext, useState, useEffect } from "react";
+import parseJSONSafe from "../utils/safeJson";
+import { AuthContext } from "../contexts/AuthContext";
+import "./Profile.css";
 
 const Profile = () => {
   const { user } = useContext(AuthContext);
@@ -10,7 +11,7 @@ const Profile = () => {
     totalEntries: 0,
     countriesVisited: 0,
     countriesWantToVisit: 0,
-    totalCountries: 195 // approximate total
+    totalCountries: 195, // approximate total
   });
 
   useEffect(() => {
@@ -20,14 +21,14 @@ const Profile = () => {
 
   const fetchJournalEntries = async () => {
     try {
-      const response = await fetch('/api/journal');
+      const response = await fetch("/api/journal");
       if (response.ok) {
-        const entries = await response.json();
+        const entries = (await parseJSONSafe(response)) || [];
         setJournalEntries(entries);
         calculateStats(entries);
       }
     } catch (error) {
-      console.error('Error fetching journal entries:', error);
+      console.error("Error fetching journal entries:", error);
     } finally {
       setLoading(false);
     }
@@ -36,11 +37,11 @@ const Profile = () => {
   const calculateStats = (entries) => {
     const visitedCountries = new Set();
     const wantToVisitCountries = new Set();
-    
-    entries.forEach(entry => {
-      if (entry.visitStatus === 'visited') {
+
+    entries.forEach((entry) => {
+      if (entry.visitStatus === "visited") {
         visitedCountries.add(entry.countryCode);
-      } else if (entry.visitStatus === 'want-to-visit') {
+      } else if (entry.visitStatus === "want-to-visit") {
         wantToVisitCountries.add(entry.countryCode);
       }
     });
@@ -49,7 +50,7 @@ const Profile = () => {
       totalEntries: entries.length,
       countriesVisited: visitedCountries.size,
       countriesWantToVisit: wantToVisitCountries.size,
-      totalCountries: 195
+      totalCountries: 195,
     });
   };
 
@@ -58,10 +59,10 @@ const Profile = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -97,19 +98,19 @@ const Profile = () => {
             <div className="stat-value">{stats.totalEntries}</div>
             <div className="stat-label">Journal Entries</div>
           </div>
-          
+
           <div className="stat-card">
             <div className="stat-icon">✅</div>
             <div className="stat-value">{stats.countriesVisited}</div>
             <div className="stat-label">Countries Visited</div>
           </div>
-          
+
           <div className="stat-card">
             <div className="stat-icon">🎯</div>
             <div className="stat-value">{stats.countriesWantToVisit}</div>
             <div className="stat-label">Want to Visit</div>
           </div>
-          
+
           <div className="stat-card">
             <div className="stat-icon">🌍</div>
             <div className="stat-value">{calculateTravelProgress()}%</div>
@@ -120,13 +121,14 @@ const Profile = () => {
         <div className="progress-section">
           <h3>Travel Progress</h3>
           <div className="progress-bar">
-            <div 
-              className="progress-fill" 
+            <div
+              className="progress-fill"
               style={{ width: `${calculateTravelProgress()}%` }}
             ></div>
           </div>
           <p className="progress-text">
-            You've visited {stats.countriesVisited} out of {stats.totalCountries} countries!
+            You've visited {stats.countriesVisited} out of{" "}
+            {stats.totalCountries} countries!
           </p>
         </div>
 
@@ -141,21 +143,25 @@ const Profile = () => {
                   <div className="entry-header">
                     <span className="entry-country">{entry.countryName}</span>
                     <span className="entry-date">
-                      {entry.createdAt ? formatDate(entry.createdAt) : 'Unknown date'}
+                      {entry.createdAt
+                        ? formatDate(entry.createdAt)
+                        : "Unknown date"}
                     </span>
                   </div>
                   <div className="entry-status">
                     <span className={`status-badge ${entry.visitStatus}`}>
-                      {entry.visitStatus === 'visited' ? '✅ Visited' : 
-                       entry.visitStatus === 'want-to-visit' ? '🎯 Want to Visit' : 
-                       '❓ Not Visited'}
+                      {entry.visitStatus === "visited"
+                        ? "✅ Visited"
+                        : entry.visitStatus === "want-to-visit"
+                        ? "🎯 Want to Visit"
+                        : "❓ Not Visited"}
                     </span>
                   </div>
                   {entry.entry && (
                     <p className="entry-preview">
-                      {entry.entry.length > 100 ? 
-                        entry.entry.substring(0, 100) + '...' : 
-                        entry.entry}
+                      {entry.entry.length > 100
+                        ? entry.entry.substring(0, 100) + "..."
+                        : entry.entry}
                     </p>
                   )}
                 </div>
@@ -163,7 +169,10 @@ const Profile = () => {
             </div>
           ) : (
             <div className="no-entries">
-              <p>No journal entries yet. Start exploring the world map to add your first entry!</p>
+              <p>
+                No journal entries yet. Start exploring the world map to add
+                your first entry!
+              </p>
             </div>
           )}
         </div>
