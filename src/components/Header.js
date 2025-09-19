@@ -2,8 +2,13 @@ import React, { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import './Header.css';
 
-const Header = ({ onShowAuth }) => {
+const Header = ({ onShowAuth, onViewChange, currentView }) => {
   const { user, logout } = useContext(AuthContext);
+
+  const handleNavClick = (view, e) => {
+    e.preventDefault();
+    onViewChange(view);
+  };
 
   return (
     <header className="header">
@@ -13,9 +18,27 @@ const Header = ({ onShowAuth }) => {
           
           <nav className="nav">
             <div className="nav-links">
-              <a href="#map" className="nav-link">Map</a>
-              <a href="#journal" className="nav-link">My Journal</a>
-              <a href="#profile" className="nav-link">Profile</a>
+              <a 
+                href="#map" 
+                className={`nav-link ${currentView === 'map' ? 'active' : ''}`}
+                onClick={(e) => handleNavClick('map', e)}
+              >
+                Map
+              </a>
+              <a 
+                href="#journal" 
+                className={`nav-link ${currentView === 'journal' ? 'active' : ''}`}
+                onClick={(e) => handleNavClick('journal', e)}
+              >
+                My Journal
+              </a>
+              <a 
+                href="#profile" 
+                className={`nav-link ${currentView === 'profile' ? 'active' : ''}`}
+                onClick={(e) => handleNavClick('profile', e)}
+              >
+                Profile
+              </a>
             </div>
             
             <div className="auth-section">

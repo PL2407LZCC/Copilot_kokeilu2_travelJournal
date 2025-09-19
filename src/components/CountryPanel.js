@@ -6,19 +6,44 @@ const CountryPanel = ({ country, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [journalEntry, setJournalEntry] = useState('');
   const [visitStatus, setVisitStatus] = useState('not-visited');
+  const [previousEntries, setPreviousEntries] = useState([]);
+  const [loadingEntries, setLoadingEntries] = useState(true);
 
   useEffect(() => {
     // Fetch detailed country information
-    fetch(`https://restcountries.com/v3.1/name/${country.name.common}?fullText=true`)
-      .then(response => response.json())
-      .then(data => {
+    const fetchCountryDetails = async () => {
+      try {
+        const response = await fetch(`https://restcountries.com/v3.1/name/${country.name.common}?fullText=true`);
+        const data = await response.json();
         setCountryDetails(data[0]);
-        setLoading(false);
-      })
-      .catch(error => {
+      } catch (error) {
         console.error('Error fetching country details:', error);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    // Fetch previous journal entries for this country
+    const fetchPreviousEntries = async () => {
+      try {
+        const response = await fetch('/api/journal');
+        if (response.ok) {
+          const allEntries = await response.json();
+          const countryEntries = allEntries.filter(entry => 
+            entry.countryName === country.name.common || 
+            entry.countryCode === country.cca3
+          );
+          setPreviousEntries(countryEntries);
+        }
+      } catch (error) {
+        console.error('Error fetching previous entries:', error);
+      } finally {
+        setLoadingEntries(false);
+      }
+    };
+
+    fetchCountryDetails();
+    fetchPreviousEntries();
   }, [country]);
 
   const handleSaveEntry = async () => {
@@ -44,10 +69,30 @@ const CountryPanel = ({ country, onClose }) => {
       
       alert('Journal entry saved successfully!');
       setJournalEntry('');
+      
+      // Refresh previous entries
+      const entriesResponse = await fetch('/api/journal');
+      if (entriesResponse.ok) {
+        const allEntries = await entriesResponse.json();
+        const countryEntries = allEntries.filter(entry => 
+          entry.countryName === country.name.common || 
+          entry.countryCode === country.cca3
+        );
+        setPreviousEntries(countryEntries);
+      }
     } catch (error) {
       console.error('Error saving entry:', error);
       alert('Failed to save entry: ' + error.message);
     }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Unknown date';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   if (loading) {
@@ -99,6 +144,36 @@ const CountryPanel = ({ country, onClose }) => {
           </div>
         </div>
 
+        {/* Previous Journal Entries Section */}
+        <div className="previous-entries">
+          <h3>Previous Journal Entries</h3>
+          {loadingEntries ? (
+            <div className="loading-entries">Loading entries...</div>
+          ) : previousEntries.length > 0 ? (
+            <div className="entries-list">
+              {previousEntries.map((entry, index) => (
+                <div key={index} className="entry-item">
+                  <div className="entry-header">
+                    <span className="entry-date">{formatDate(entry.createdAt)}</span>
+                    <span className={`entry-status ${entry.visitStatus}`}>
+                      {entry.visitStatus === 'visited' ? '✅ Visited' : 
+                       entry.visitStatus === 'want-to-visit' ? '🎯 Want to Visit' : 
+                       '❓ Not Visited'}
+                    </span>
+                  </div>
+                  {entry.entry && (
+                    <p className="entry-text">{entry.entry}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="no-entries">
+              <p>No previous entries for this country. Add your first one below!</p>
+            </div>
+          )}
+        </div>
+
         <div className="visit-status">
           <h3>Visit Status</h3>
           <div className="status-options">
@@ -133,7 +208,7 @@ const CountryPanel = ({ country, onClose }) => {
         </div>
 
         <div className="journal-section">
-          <h3>Journal Entry</h3>
+          <h3>Add New Journal Entry</h3>
           <textarea
             value={journalEntry}
             onChange={(e) => setJournalEntry(e.target.value)}
