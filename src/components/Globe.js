@@ -45,6 +45,14 @@ const Globe = ({ onCountrySelect }) => {
       });
   }, []);
 
+  // Disable auto-rotation when globe is ready
+  useEffect(() => {
+    if (globeEl.current && globeEl.current.controls()) {
+      globeEl.current.controls().autoRotate = false;
+      globeEl.current.controls().enableRotate = true; // Still allow manual rotation
+    }
+  }, [loading]); // Run after loading is complete
+
   // Get visit status for a country
   const getCountryVisitStatus = (polygon) => {
     const properties = polygon?.properties || {};
@@ -83,7 +91,7 @@ const Globe = ({ onCountrySelect }) => {
       case "visited":
         return isHovered ? "rgba(76, 175, 80, 0.9)" : "rgba(76, 175, 80, 0.7)"; // Green
       case "want-to-visit":
-        return isHovered ? "rgba(255, 193, 7, 0.9)" : "rgba(255, 193, 7, 0.7)"; // Amber
+        return isHovered ? "rgba(155, 89, 182, 0.9)" : "rgba(155, 89, 182, 0.7)"; // Purple
       default:
         return isHovered
           ? "rgba(120, 120, 120, 0.8)"
@@ -241,10 +249,7 @@ const Globe = ({ onCountrySelect }) => {
             } else {
               setHoveredCountry(null);
             }
-            // Pause auto-rotation on hover
-            if (globeEl.current && globeEl.current.controls()) {
-              globeEl.current.controls().autoRotate = !polygon;
-            }
+            // Keep auto-rotation disabled - don't enable it on hover changes
           }}
           // Globe controls
           width={800}

@@ -3,7 +3,7 @@ import parseJSONSafe from "../utils/safeJson";
 import { AuthContext } from "../contexts/AuthContext";
 import "./Profile.css";
 
-const Profile = () => {
+const Profile = ({ onClose }) => {
   const { user } = useContext(AuthContext);
   const [journalEntries, setJournalEntries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,11 +68,14 @@ const Profile = () => {
 
   if (!user) {
     return (
-      <div className="profile-container">
-        <div className="profile-card">
-          <div className="no-user">
-            <h2>👤 Profile</h2>
-            <p>Please log in to view your travel profile.</p>
+      <div className="profile-overlay" onClick={onClose}>
+        <div className="profile-container" onClick={(e) => e.stopPropagation()}>
+          <div className="profile-card">
+            <button className="close-button" onClick={onClose}>×</button>
+            <div className="no-user">
+              <h2>👤 Profile</h2>
+              <p>Please log in to view your travel profile.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -80,8 +83,10 @@ const Profile = () => {
   }
 
   return (
-    <div className="profile-container">
-      <div className="profile-card">
+    <div className="profile-overlay" onClick={onClose}>
+      <div className="profile-container" onClick={(e) => e.stopPropagation()}>
+        <div className="profile-card">
+          <button className="close-button" onClick={onClose}>×</button>
         <div className="profile-header">
           <div className="profile-avatar">
             <span className="avatar-icon">🧳</span>
@@ -175,6 +180,7 @@ const Profile = () => {
               </p>
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>

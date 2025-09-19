@@ -7,6 +7,7 @@ import Globe from "./components/Globe";
 import CountryPanel from "./components/CountryPanel";
 import AuthModal from "./components/AuthModal";
 import Profile from "./pages/Profile";
+import Journal from "./components/Journal";
 import { AuthProvider } from "./contexts/AuthContext";
 
 function App() {
@@ -15,6 +16,8 @@ function App() {
   const [currentView, setCurrentView] = useState("map"); // 'map', 'journal', 'profile'
   const [mapType, setMapType] = useState("globe"); // 'globe', 'interactive', 'simple'
 
+  const [showProfile, setShowProfile] = useState(false);
+
   // Debug function to track country selection
   const handleCountrySelect = (country) => {
     console.log("App: Country selected:", country);
@@ -22,8 +25,12 @@ function App() {
   };
 
   const handleViewChange = (view) => {
-    setCurrentView(view);
-    setSelectedCountry(null); // Close any open country panel when switching views
+    if (view === "profile") {
+      setShowProfile(true);
+    } else {
+      setCurrentView(view);
+      setSelectedCountry(null); // Close any open country panel when switching views
+    }
   };
 
   const renderMap = () => {
@@ -40,11 +47,8 @@ function App() {
 
   const renderCurrentView = () => {
     switch (currentView) {
-      case "profile":
-        return <Profile />;
       case "journal":
-        // For now, show the map but could be a separate journal view later
-        return <div className="map-container">{renderMap()}</div>;
+        return <Journal />;
       case "map":
       default:
         return <div className="map-container">{renderMap()}</div>;
@@ -63,11 +67,16 @@ function App() {
         <main className="main-content">
           {renderCurrentView()}
 
-          {selectedCountry && currentView !== "profile" && (
+          {selectedCountry && (
             <CountryPanel
               country={selectedCountry}
               onClose={() => setSelectedCountry(null)}
             />
+          )}
+
+          {/* Profile overlay */}
+          {showProfile && (
+            <Profile onClose={() => setShowProfile(false)} />
           )}
 
           {/* Debug info */}
