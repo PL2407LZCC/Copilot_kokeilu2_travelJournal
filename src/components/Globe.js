@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import GlobeGL from "react-globe.gl";
 import parseJSONSafe from "../utils/safeJson";
+import { AuthContext } from "../contexts/AuthContext";
 import "./Globe.css";
 
 const Globe = ({ onCountrySelect }) => {
@@ -9,6 +10,7 @@ const Globe = ({ onCountrySelect }) => {
     typeof onCountrySelect
   );
 
+  const { getAuthHeaders } = useContext(AuthContext);
   const [countries, setCountries] = useState([]);
   const [countriesGeo, setCountriesGeo] = useState({ features: [] });
   const [journalEntries, setJournalEntries] = useState([]);
@@ -27,10 +29,22 @@ const Globe = ({ onCountrySelect }) => {
       "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"
     ).then((response) => response.json());
 
-    // Fetch journal entries to show country visit status
-    const fetchJournalEntries = fetch("/api/journal")
+    // Fetch journal entries to show country visit status (requires auth)
+    const fetchJournalEntries = fetch("/api/journal", {
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+    })
       .then((response) => parseJSONSafe(response))
-      .then((data) => data || []);
+      .then((data) => data || [])
+      .catch((error) => {
+        console.log(
+          "Could not fetch journal entries (user may not be logged in):",
+          error
+        );
+        return []; // Return empty array if not authenticated
+      });
 
     Promise.all([fetchCountries, fetchGeoData, fetchJournalEntries])
       .then(([countriesData, geoData, journalData]) => {
@@ -91,7 +105,9 @@ const Globe = ({ onCountrySelect }) => {
       case "visited":
         return isHovered ? "rgba(76, 175, 80, 0.9)" : "rgba(76, 175, 80, 0.7)"; // Green
       case "want-to-visit":
-        return isHovered ? "rgba(155, 89, 182, 0.9)" : "rgba(155, 89, 182, 0.7)"; // Purple
+        return isHovered
+          ? "rgba(155, 89, 182, 0.9)"
+          : "rgba(155, 89, 182, 0.7)"; // Purple
       default:
         return isHovered
           ? "rgba(120, 120, 120, 0.8)"

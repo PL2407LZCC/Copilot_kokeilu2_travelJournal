@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import parseJSONSafe from "../utils/safeJson";
+import { AuthContext } from "../contexts/AuthContext";
 import "./CountryPanel.css";
 
 const CountryPanel = ({ country, onClose }) => {
+  const { user, getAuthHeaders } = useContext(AuthContext);
   const [countryDetails, setCountryDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [journalEntry, setJournalEntry] = useState("");
@@ -28,8 +30,15 @@ const CountryPanel = ({ country, onClose }) => {
 
     // Fetch previous journal entries for this country
     const fetchPreviousEntries = async () => {
+      if (!user) {
+        setPreviousEntries([]);
+        setLoadingEntries(false);
+        return;
+      }
+
       try {
-        const response = await fetch("/api/journal");
+        const headers = getAuthHeaders();
+        const response = await fetch("/api/journal", { headers });
         if (response.ok) {
           const allEntries = (await parseJSONSafe(response)) || [];
           const countryEntries = allEntries.filter(
@@ -51,12 +60,19 @@ const CountryPanel = ({ country, onClose }) => {
   }, [country]);
 
   const handleSaveEntry = async () => {
+    if (!user) {
+      alert("Please log in to save journal entries.");
+      return;
+    }
+
     try {
+      const headers = {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      };
       const response = await fetch("/api/journal", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify({
           countryCode: countryDetails?.cca3,
           countryName: country.name.common,
@@ -74,7 +90,10 @@ const CountryPanel = ({ country, onClose }) => {
       setJournalEntry("");
 
       // Refresh previous entries
-      const entriesResponse = await fetch("/api/journal");
+      const authHeaders = getAuthHeaders();
+      const entriesResponse = await fetch("/api/journal", {
+        headers: authHeaders,
+      });
       if (entriesResponse.ok) {
         const allEntries = (await parseJSONSafe(entriesResponse)) || [];
         const countryEntries = allEntries.filter(
@@ -153,89 +172,102 @@ const CountryPanel = ({ country, onClose }) => {
           </div>
         </div>
 
-        {/* Previous Journal Entries Section */}
-        <div className="previous-entries">
-          <h3>Previous Journal Entries</h3>
-          {loadingEntries ? (
-            <div className="loading-entries">Loading entries...</div>
-          ) : previousEntries.length > 0 ? (
-            <div className="entries-list">
-              {previousEntries.map((entry, index) => (
-                <div key={index} className="entry-item">
-                  <div className="entry-header">
-                    <span className="entry-date">
-                      {formatDate(entry.createdAt)}
-                    </span>
-                    <span className={`entry-status ${entry.visitStatus}`}>
-                      {entry.visitStatus === "visited"
-                        ? "✅ Visited"
-                        : entry.visitStatus === "want-to-visit"
-                        ? "🎯 Want to Visit"
-                        : "❓ Not Visited"}
-                    </span>
+        {/* Previous Journal Entries Section - Only show for logged in users */}
+        {user && (
+          <div className="previous-entries">
+            <h3>Previous Journal Entries</h3>
+            {loadingEntries ? (
+              <div className="loading-entries">Loading entries...</div>
+            ) : previousEntries.length > 0 ? (
+              <div className="entries-list">
+                {previousEntries.map((entry, index) => (
+                  <div key={index} className="entry-item">
+                    <div className="entry-header">
+                      <span className="entry-date">
+                        {formatDate(entry.createdAt)}
+                      </span>
+                      <span className={`entry-status ${entry.visitStatus}`}>
+                        {entry.visitStatus === "visited"
+                          ? "✅ Visited"
+                          : entry.visitStatus === "want-to-visit"
+                          ? "🎯 Want to Visit"
+                          : "❓ Not Visited"}
+                      </span>
+                    </div>
+                    {entry.entry && <p className="entry-text">{entry.entry}</p>}
                   </div>
-                  {entry.entry && <p className="entry-text">{entry.entry}</p>}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="no-entries">
-              <p>
-                No previous entries for this country. Add your first one below!
-              </p>
-            </div>
-          )}
-        </div>
-
-        <div className="visit-status">
-          <h3>Visit Status</h3>
-          <div className="status-options">
-            <label>
-              <input
-                type="radio"
-                value="not-visited"
-                checked={visitStatus === "not-visited"}
-                onChange={(e) => setVisitStatus(e.target.value)}
-              />
-              Not Visited
-            </label>
-            <label>
-              <input
-                type="radio"
-                value="want-to-visit"
-                checked={visitStatus === "want-to-visit"}
-                onChange={(e) => setVisitStatus(e.target.value)}
-              />
-              Want to Visit
-            </label>
-            <label>
-              <input
-                type="radio"
-                value="visited"
-                checked={visitStatus === "visited"}
-                onChange={(e) => setVisitStatus(e.target.value)}
-              />
-              Visited
-            </label>
+                ))}
+              </div>
+            ) : (
+              <div className="no-entries">
+                <p>
+                  No previous entries for this country. Add your first one
+                  below!
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
-        <div className="journal-section">
-          <h3>Add New Journal Entry</h3>
-          <textarea
-            value={journalEntry}
-            onChange={(e) => setJournalEntry(e.target.value)}
-            placeholder="Write your thoughts, experiences, or plans about this country..."
-            rows={6}
-            className="journal-textarea"
-          />
-          <button
-            onClick={handleSaveEntry}
-            className="btn btn-primary save-btn"
-          >
-            Save Entry
-          </button>
-        </div>
+        {user && (
+          <div className="visit-status">
+            <h3>Visit Status</h3>
+            <div className="status-options">
+              <label>
+                <input
+                  type="radio"
+                  value="not-visited"
+                  checked={visitStatus === "not-visited"}
+                  onChange={(e) => setVisitStatus(e.target.value)}
+                />
+                Not Visited
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  value="want-to-visit"
+                  checked={visitStatus === "want-to-visit"}
+                  onChange={(e) => setVisitStatus(e.target.value)}
+                />
+                Want to Visit
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  value="visited"
+                  checked={visitStatus === "visited"}
+                  onChange={(e) => setVisitStatus(e.target.value)}
+                />
+                Visited
+              </label>
+            </div>
+          </div>
+        )}
+
+        {user && (
+          <div className="journal-section">
+            <h3>Add New Journal Entry</h3>
+            <textarea
+              value={journalEntry}
+              onChange={(e) => setJournalEntry(e.target.value)}
+              placeholder="Write your thoughts, experiences, or plans about this country..."
+              rows={6}
+              className="journal-textarea"
+            />
+            <button
+              onClick={handleSaveEntry}
+              className="btn btn-primary save-btn"
+            >
+              Save Entry
+            </button>
+          </div>
+        )}
+
+        {!user && (
+          <div className="auth-required">
+            <p>Please log in to view your journal entries and save new ones.</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -7,6 +7,12 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Helper function to get auth headers
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("travel-journal-token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   useEffect(() => {
     // Check if user is logged in (from localStorage)
     const savedUser = localStorage.getItem("travel-journal-user");
@@ -85,6 +91,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     loading,
+    getAuthHeaders,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

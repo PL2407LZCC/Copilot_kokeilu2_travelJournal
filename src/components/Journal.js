@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import parseJSONSafe from "../utils/safeJson";
+import { AuthContext } from "../contexts/AuthContext";
 import "./Journal.css";
 
 const Journal = () => {
+  const { user, getAuthHeaders } = useContext(AuthContext);
   const [journalEntries, setJournalEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,9 +15,16 @@ const Journal = () => {
   }, []);
 
   const fetchJournalEntries = async () => {
+    if (!user) {
+      setJournalEntries([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const response = await fetch("/api/journal");
+      const headers = getAuthHeaders();
+      const response = await fetch("/api/journal", { headers });
       if (response.ok) {
         const entries = (await parseJSONSafe(response)) || [];
         setJournalEntries(entries);
@@ -106,7 +115,7 @@ const Journal = () => {
       <div className="journal-header">
         <h2>📝 Travel Journal</h2>
         <p>All your travel memories and plans in one place</p>
-        
+
         <div className="journal-stats">
           <div className="stat">
             <span className="stat-number">{journalEntries.length}</span>
@@ -114,13 +123,25 @@ const Journal = () => {
           </div>
           <div className="stat">
             <span className="stat-number">
-              {new Set(journalEntries.filter(e => e.visitStatus === "visited").map(e => e.countryCode)).size}
+              {
+                new Set(
+                  journalEntries
+                    .filter((e) => e.visitStatus === "visited")
+                    .map((e) => e.countryCode)
+                ).size
+              }
             </span>
             <span className="stat-label">Countries Visited</span>
           </div>
           <div className="stat">
             <span className="stat-number">
-              {new Set(journalEntries.filter(e => e.visitStatus === "want-to-visit").map(e => e.countryCode)).size}
+              {
+                new Set(
+                  journalEntries
+                    .filter((e) => e.visitStatus === "want-to-visit")
+                    .map((e) => e.countryCode)
+                ).size
+              }
             </span>
             <span className="stat-label">Want to Visit</span>
           </div>
@@ -138,13 +159,19 @@ const Journal = () => {
           className={`filter-btn ${filter === "visited" ? "active" : ""}`}
           onClick={() => setFilter("visited")}
         >
-          ✅ Visited ({journalEntries.filter(e => e.visitStatus === "visited").length})
+          ✅ Visited (
+          {journalEntries.filter((e) => e.visitStatus === "visited").length})
         </button>
         <button
           className={`filter-btn ${filter === "want-to-visit" ? "active" : ""}`}
           onClick={() => setFilter("want-to-visit")}
         >
-          🎯 Want to Visit ({journalEntries.filter(e => e.visitStatus === "want-to-visit").length})
+          🎯 Want to Visit (
+          {
+            journalEntries.filter((e) => e.visitStatus === "want-to-visit")
+              .length
+          }
+          )
         </button>
       </div>
 
@@ -152,7 +179,10 @@ const Journal = () => {
         {Object.keys(groupedEntries).length === 0 ? (
           <div className="no-entries">
             <h3>No journal entries yet</h3>
-            <p>Start exploring countries on the map and add your first journal entry!</p>
+            <p>
+              Start exploring countries on the map and add your first journal
+              entry!
+            </p>
           </div>
         ) : (
           <div className="entries-by-country">
@@ -162,14 +192,19 @@ const Journal = () => {
                 <div key={country} className="country-section">
                   <div className="country-header">
                     <h3>{country}</h3>
-                    <span className={`country-status ${entries[0].visitStatus}`}>
-                      {getStatusIcon(entries[0].visitStatus)} {getStatusText(entries[0].visitStatus)}
+                    <span
+                      className={`country-status ${entries[0].visitStatus}`}
+                    >
+                      {getStatusIcon(entries[0].visitStatus)}{" "}
+                      {getStatusText(entries[0].visitStatus)}
                     </span>
                   </div>
-                  
+
                   <div className="country-entries">
                     {entries
-                      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                      .sort(
+                        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+                      )
                       .map((entry) => (
                         <div key={entry.id} className="journal-entry">
                           <div className="entry-meta">

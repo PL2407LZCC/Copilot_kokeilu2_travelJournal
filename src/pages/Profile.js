@@ -4,7 +4,7 @@ import { AuthContext } from "../contexts/AuthContext";
 import "./Profile.css";
 
 const Profile = ({ onClose }) => {
-  const { user } = useContext(AuthContext);
+  const { user, getAuthHeaders } = useContext(AuthContext);
   const [journalEntries, setJournalEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -20,8 +20,14 @@ const Profile = ({ onClose }) => {
   }, []);
 
   const fetchJournalEntries = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await fetch("/api/journal");
+      const headers = getAuthHeaders();
+      const response = await fetch("/api/journal", { headers });
       if (response.ok) {
         const entries = (await parseJSONSafe(response)) || [];
         setJournalEntries(entries);
@@ -71,7 +77,9 @@ const Profile = ({ onClose }) => {
       <div className="profile-overlay" onClick={onClose}>
         <div className="profile-container" onClick={(e) => e.stopPropagation()}>
           <div className="profile-card">
-            <button className="close-button" onClick={onClose}>×</button>
+            <button className="close-button" onClick={onClose}>
+              ×
+            </button>
             <div className="no-user">
               <h2>👤 Profile</h2>
               <p>Please log in to view your travel profile.</p>
@@ -86,101 +94,103 @@ const Profile = ({ onClose }) => {
     <div className="profile-overlay" onClick={onClose}>
       <div className="profile-container" onClick={(e) => e.stopPropagation()}>
         <div className="profile-card">
-          <button className="close-button" onClick={onClose}>×</button>
-        <div className="profile-header">
-          <div className="profile-avatar">
-            <span className="avatar-icon">🧳</span>
-          </div>
-          <div className="profile-info">
-            <h1>{user.username}</h1>
-            <p className="profile-subtitle">Travel Explorer</p>
-          </div>
-        </div>
-
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-icon">🗂️</div>
-            <div className="stat-value">{stats.totalEntries}</div>
-            <div className="stat-label">Journal Entries</div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon">✅</div>
-            <div className="stat-value">{stats.countriesVisited}</div>
-            <div className="stat-label">Countries Visited</div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon">🎯</div>
-            <div className="stat-value">{stats.countriesWantToVisit}</div>
-            <div className="stat-label">Want to Visit</div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon">🌍</div>
-            <div className="stat-value">{calculateTravelProgress()}%</div>
-            <div className="stat-label">World Coverage</div>
-          </div>
-        </div>
-
-        <div className="progress-section">
-          <h3>Travel Progress</h3>
-          <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{ width: `${calculateTravelProgress()}%` }}
-            ></div>
-          </div>
-          <p className="progress-text">
-            You've visited {stats.countriesVisited} out of{" "}
-            {stats.totalCountries} countries!
-          </p>
-        </div>
-
-        <div className="recent-entries">
-          <h3>Recent Journal Entries</h3>
-          {loading ? (
-            <div className="loading">Loading entries...</div>
-          ) : journalEntries.length > 0 ? (
-            <div className="entries-list">
-              {journalEntries.slice(0, 5).map((entry, index) => (
-                <div key={index} className="entry-item">
-                  <div className="entry-header">
-                    <span className="entry-country">{entry.countryName}</span>
-                    <span className="entry-date">
-                      {entry.createdAt
-                        ? formatDate(entry.createdAt)
-                        : "Unknown date"}
-                    </span>
-                  </div>
-                  <div className="entry-status">
-                    <span className={`status-badge ${entry.visitStatus}`}>
-                      {entry.visitStatus === "visited"
-                        ? "✅ Visited"
-                        : entry.visitStatus === "want-to-visit"
-                        ? "🎯 Want to Visit"
-                        : "❓ Not Visited"}
-                    </span>
-                  </div>
-                  {entry.entry && (
-                    <p className="entry-preview">
-                      {entry.entry.length > 100
-                        ? entry.entry.substring(0, 100) + "..."
-                        : entry.entry}
-                    </p>
-                  )}
-                </div>
-              ))}
+          <button className="close-button" onClick={onClose}>
+            ×
+          </button>
+          <div className="profile-header">
+            <div className="profile-avatar">
+              <span className="avatar-icon">🧳</span>
             </div>
-          ) : (
-            <div className="no-entries">
-              <p>
-                No journal entries yet. Start exploring the world map to add
-                your first entry!
-              </p>
+            <div className="profile-info">
+              <h1>{user.username}</h1>
+              <p className="profile-subtitle">Travel Explorer</p>
             </div>
-          )}
-        </div>
+          </div>
+
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-icon">🗂️</div>
+              <div className="stat-value">{stats.totalEntries}</div>
+              <div className="stat-label">Journal Entries</div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-icon">✅</div>
+              <div className="stat-value">{stats.countriesVisited}</div>
+              <div className="stat-label">Countries Visited</div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-icon">🎯</div>
+              <div className="stat-value">{stats.countriesWantToVisit}</div>
+              <div className="stat-label">Want to Visit</div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-icon">🌍</div>
+              <div className="stat-value">{calculateTravelProgress()}%</div>
+              <div className="stat-label">World Coverage</div>
+            </div>
+          </div>
+
+          <div className="progress-section">
+            <h3>Travel Progress</h3>
+            <div className="progress-bar">
+              <div
+                className="progress-fill"
+                style={{ width: `${calculateTravelProgress()}%` }}
+              ></div>
+            </div>
+            <p className="progress-text">
+              You've visited {stats.countriesVisited} out of{" "}
+              {stats.totalCountries} countries!
+            </p>
+          </div>
+
+          <div className="recent-entries">
+            <h3>Recent Journal Entries</h3>
+            {loading ? (
+              <div className="loading">Loading entries...</div>
+            ) : journalEntries.length > 0 ? (
+              <div className="entries-list">
+                {journalEntries.slice(0, 5).map((entry, index) => (
+                  <div key={index} className="entry-item">
+                    <div className="entry-header">
+                      <span className="entry-country">{entry.countryName}</span>
+                      <span className="entry-date">
+                        {entry.createdAt
+                          ? formatDate(entry.createdAt)
+                          : "Unknown date"}
+                      </span>
+                    </div>
+                    <div className="entry-status">
+                      <span className={`status-badge ${entry.visitStatus}`}>
+                        {entry.visitStatus === "visited"
+                          ? "✅ Visited"
+                          : entry.visitStatus === "want-to-visit"
+                          ? "🎯 Want to Visit"
+                          : "❓ Not Visited"}
+                      </span>
+                    </div>
+                    {entry.entry && (
+                      <p className="entry-preview">
+                        {entry.entry.length > 100
+                          ? entry.entry.substring(0, 100) + "..."
+                          : entry.entry}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-entries">
+                <p>
+                  No journal entries yet. Start exploring the world map to add
+                  your first entry!
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
