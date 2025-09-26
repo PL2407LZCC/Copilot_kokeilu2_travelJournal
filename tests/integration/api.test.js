@@ -1,7 +1,5 @@
 const request = require('supertest');
 const express = require('express');
-const path = require('path');
-const fs = require('fs');
 
 // Import routes
 const authRoutes = require('../../server/routes/auth');
@@ -13,12 +11,15 @@ jest.mock('node-fetch', () => jest.fn());
 
 // Mock database with a test database
 jest.mock('../../server/config/database', () => {
+  const mockPath = require('path');
+  const mockFs = require('fs');
   const sqlite3 = require('sqlite3').verbose();
-  const testDbPath = path.join(__dirname, '../test.db');
+  
+  const testDbPath = mockPath.join(__dirname, '../test.db');
   
   // Clean up any existing test database
-  if (fs.existsSync(testDbPath)) {
-    fs.unlinkSync(testDbPath);
+  if (mockFs.existsSync(testDbPath)) {
+    mockFs.unlinkSync(testDbPath);
   }
   
   const db = new sqlite3.Database(testDbPath);
@@ -55,8 +56,8 @@ jest.mock('../../server/config/database', () => {
     close: () => {
       db.close();
       // Clean up test database after tests
-      if (fs.existsSync(testDbPath)) {
-        fs.unlinkSync(testDbPath);
+      if (mockFs.existsSync(testDbPath)) {
+        mockFs.unlinkSync(testDbPath);
       }
     }
   };

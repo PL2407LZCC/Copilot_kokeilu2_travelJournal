@@ -40,7 +40,7 @@ describe('Header Component', () => {
   test('shows login button when user is not authenticated', () => {
     renderHeader();
     
-    expect(screen.getByText('Login')).toBeInTheDocument();
+    expect(screen.getByText('Login / Register')).toBeInTheDocument();
     expect(screen.queryByText('My Journal')).not.toBeInTheDocument();
     expect(screen.queryByText('Profile')).not.toBeInTheDocument();
   });
@@ -56,7 +56,7 @@ describe('Header Component', () => {
     expect(screen.getByText('My Journal')).toBeInTheDocument();
     expect(screen.getByText('Profile')).toBeInTheDocument();
     expect(screen.getByText('testuser')).toBeInTheDocument();
-    expect(screen.queryByText('Login')).not.toBeInTheDocument();
+    expect(screen.queryByText('Login / Register')).not.toBeInTheDocument();
   });
 
   test('calls onViewChange when navigation links are clicked', () => {
@@ -83,7 +83,7 @@ describe('Header Component', () => {
     
     renderHeader(mockAuthContext, { onShowAuth: mockOnShowAuth });
     
-    fireEvent.click(screen.getByText('Login'));
+    fireEvent.click(screen.getByText('Login / Register'));
     expect(mockOnShowAuth).toHaveBeenCalled();
   });
 
